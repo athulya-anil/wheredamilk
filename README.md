@@ -39,10 +39,6 @@
 - [ ] **Confidence-gated OCR** — skip OCR if YOLO confidence < threshold
 - [ ] **Vertical guidance** — "look higher / lower / bottom shelf"
 
-### User Experience
-- [ ] **Audio-only mode** — suppress OpenCV window for real device use
-- [ ] **Low-power mode** — skip MiDaS, use bbox-area only
-
 ### Testing (live — requires webcam + deps)
 - [ ] Run `main.py`, confirm YOLO boxes appear
 - [ ] Test "find milk" with a printed label
