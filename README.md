@@ -1,6 +1,6 @@
-# wheredamilk 
+# wheredamilk 🥛
 
-> Real-time assistive vision — **find items** and **read labels** by speaking, guided by AI-powered depth and direction audio.
+> Real-time assistive vision — **find items** and **read labels** by speaking, guided by AI-powered depth and voice guidance.
 
 ---
 
@@ -9,17 +9,18 @@
 ### Core Pipeline
 - [x] **YOLOv8n object detection** — real-time, 640×480, every 2nd frame (`vision/yolo.py`)
 - [x] **PaddleOCR text reading** — crops top-1/2 boxes by confidence, reads label text (`vision/ocr.py`)
-- [x] **MiDaS monocular depth** — estimates real depth from single RGB webcam, no depth camera needed (`vision/depth.py`)
+- [x] **MiDaS monocular depth** — real depth from a single RGB webcam, no depth camera needed (`vision/depth.py`)
 - [x] **Keyword matching** — case-insensitive substring, e.g. "milk" in "DairyPure Whole Milk" (`logic/match.py`)
-- [x] **Spatial direction** — left/right/ahead from bbox centre + real MiDaS depth (bbox-area fallback) (`logic/direction.py`)
+- [x] **Spatial direction** — left/right/ahead from bbox centre + MiDaS depth (bbox-area fallback) (`logic/direction.py`)
 - [x] **IoU tracker** — locks onto target, tracks across frames, handles short occlusions (`logic/tracker.py`)
 
-### Audio
-- [x] **ElevenLabs TTS** — natural voice guidance via `eleven_turbo_v2` (`utils/tts.py`)
-- [x] **pyttsx3 fallback** — offline TTS if ElevenLabs key not set
+### Voice & Audio
+- [x] **ElevenLabs TTS** 🎙️ — natural, human-quality voice via `eleven_turbo_v2` model (`utils/tts.py`)
+- [x] **pyttsx3 fallback** — offline TTS if `ELEVEN_API_KEY` not set
 - [x] **Throttled speech** — speaks only on direction change or every ~1s (no spam)
-- [x] **Voice command input** — continuous mic listener in background thread (`utils/speech.py`)
-- [x] **Command parsing** — "find milk", "read", "stop", "quit"
+- [x] **`.env` support** — API key loaded automatically via `python-dotenv`
+- [x] **Continuous mic listener** — background thread, always listening (`utils/speech.py`)
+- [x] **Voice commands** — "find milk", "read", "stop", "quit"
 
 ### Modes
 - [x] **Find mode** — YOLO → OCR top boxes → match → lock → track → speak directions continuously
@@ -31,47 +32,52 @@
 
 ---
 
-## 🔜 Not Yet Done / To-Do
+## 🔜 To-Do
 
 ### Accuracy & Robustness
-- [ ] **Offline speech recognition** — currently uses Google Speech API (internet required); swap to Whisper or Vosk for offline use
-- [ ] **Vertical guidance** — currently only left/right/forward; no up/down guidance (e.g. "look higher", "it's on the bottom shelf")
-- [ ] **Multi-target disambiguation** — if two "milk" cartons are visible, pick the closer one using depth
-- [ ] **Re-lock after occlusion** — if IoU tracker loses the target completely, re-trigger OCR search
-- [ ] **Confidence-gated OCR** — skip OCR if YOLO confidence < threshold (reduce false positives)
+- [ ] **Re-lock after occlusion** — if tracker loses target entirely, re-trigger OCR search
+- [ ] **Multi-target disambiguation** — two matching items visible → pick closer one via MiDaS
+- [ ] **Confidence-gated OCR** — skip OCR if YOLO confidence < threshold
+- [ ] **Vertical guidance** — "look higher / lower / bottom shelf"
 
 ### User Experience
-- [ ] **Wake word** — say "hey milk" to activate, instead of always listening
-- [ ] **Earpiece / headphone mode** — suppress OpenCV window, audio-only output for real device use
-- [ ] **Battery / speed mode toggle** — skip MiDaS on low-power mode, use bbox-area only
+- [ ] **Audio-only mode** — suppress OpenCV window for real device use
+- [ ] **Low-power mode** — skip MiDaS, use bbox-area only
 
-### Platform
-- [ ] **iOS / Android front-end** — connect to `app.py` Flask API from a mobile app
+### Testing (live — requires webcam + deps)
+- [ ] Run `main.py`, confirm YOLO boxes appear
+- [ ] Test "find milk" with a printed label
+- [ ] Test "read" mode on product packaging
+- [ ] Confirm ElevenLabs voice fires on startup phrase
+- [ ] Confirm TTS throttle — no speech spam
+
+### Platform / Deployment
+- [ ] iOS / Android app → calls Flask `/find` and `/read`
 
 ---
 
 ## Architecture
 
 ```
-Webcam (OpenCV)
-      ↓
-YOLOv8n (detect objects)            vision/yolo.py
-      ↓
-Select top 1–2 boxes by confidence
-      ↓
-MiDaS Depth Estimator               vision/depth.py  
-      ↓
-PaddleOCR (read text on crop)       vision/ocr.py
-      ↓
+Voice Command ("find milk")
+        ↓
+Mic Listener (background thread)    utils/speech.py
+        ↓
+Webcam (OpenCV 640×480)
+        ↓
+YOLOv8n — detect objects            vision/yolo.py
+        ↓
+MiDaS — estimate depth              vision/depth.py
+        ↓
+PaddleOCR — read text on crop       vision/ocr.py
+        ↓
 Keyword match                       logic/match.py
-      ↓
-IoU Tracker (lock target)           logic/tracker.py
-      ↓
+        ↓
+IoU Tracker — lock target           logic/tracker.py
+        ↓
 Direction (left/right + depth)      logic/direction.py
-      ↓
-ElevenLabs TTS (throttled)          utils/tts.py
-      ↑
-Voice Commands (mic thread)         utils/speech.py
+        ↓
+ElevenLabs TTS 🎙️ (throttled)       utils/tts.py
 ```
 
 ---
@@ -80,6 +86,7 @@ Voice Commands (mic thread)         utils/speech.py
 
 ```
 wheredamilk/
+├── .env                 ← API keys (gitignored, never pushed)
 ├── main.py              ← voice-controlled webcam loop
 ├── app.py               ← Flask REST API (optional)
 ├── requirements.txt
@@ -88,15 +95,15 @@ wheredamilk/
 ├── vision/
 │   ├── yolo.py          ← YOLOv8n detector
 │   ├── ocr.py           ← PaddleOCR wrapper
-│   └── depth.py         ← MiDaS monocular depth  ← NEW
+│   └── depth.py         ← MiDaS monocular depth
 │
 ├── logic/
 │   ├── match.py         ← keyword matching
-│   ├── direction.py     ← left/right/ahead + depth
+│   ├── direction.py     ← left/right/ahead + real depth
 │   └── tracker.py       ← IoU single-target tracker
 │
 └── utils/
-    ├── tts.py           ← ElevenLabs + pyttsx3 fallback
+    ├── tts.py           ← ElevenLabs TTS + pyttsx3 fallback
     └── speech.py        ← continuous mic listener
 ```
 
@@ -112,45 +119,46 @@ pip install -r requirements.txt
 # macOS mic support
 brew install portaudio && pip install pyaudio
 
-# MiDaS depth model (~400 MB, downloads on first run automatically)
-# Nothing extra to install — handled by: pip install transformers timm torch
+# MiDaS weights (~400 MB) download automatically on first run
 ```
 
 ---
 
-## Environment Variables
+## ElevenLabs Setup 🎙️
 
-| Variable | Required | Description |
-|---|---|---|
-| `ELEVEN_API_KEY` | ✅ For best voice | ElevenLabs API key — get at [elevenlabs.io](https://elevenlabs.io) |
-| `ELEVEN_VOICE_ID` | Optional | Voice name (default: `Rachel`) |
+1. Sign up at **[elevenlabs.io](https://elevenlabs.io)** (free — 10,000 chars/month)
+2. Go to **Settings → API Keys** → create and copy your key
+3. Add to `.env` in the project root:
 
 ```bash
-export ELEVEN_API_KEY="sk-..."
-export ELEVEN_VOICE_ID="Rachel"   # or Bella, Antoni, etc.
+ELEVEN_API_KEY=sk_your_key_here
+ELEVEN_VOICE_ID=Rachel        # optional — Rachel is default
 ```
+
+> The `.env` file is gitignored and **never pushed to GitHub**.
+> If no key is set, the app falls back to pyttsx3 (offline, robotic voice).
 
 ---
 
 ## Usage
 
-### Standalone
+### Run
 
 ```bash
 python main.py
 ```
 
-| Say | Action |
+| Say | What happens |
 |---|---|
-| `"find milk"` | Scans, locks on, speaks live directions until you reach it |
-| `"find orange juice"` | Works for any item |
-| `"read"` / `"what is this"` | OCR the biggest thing in view, speak label once |
+| `"find milk"` | Scans scene, locks on milk, speaks live directions |
+| `"find orange juice"` | Works for any item name |
+| `"read"` / `"what is this"` | OCRs biggest box, speaks the label once |
 | `"stop"` / `"cancel"` | Return to idle |
 | `"quit"` / `"exit"` | Close app |
 
 Press `q` in the OpenCV window to also quit.
 
-### Flask API
+### Flask API (optional)
 
 ```bash
 python app.py
@@ -164,13 +172,18 @@ curl http://localhost:5000/status
 
 ## Tech Stack
 
-| Library | Purpose | Status |
-|---|---|---|
-| `ultralytics` | YOLOv8n detection | ✅ Done |
-| `opencv-python` | Webcam + drawing | ✅ Done |
-| `paddleocr` | Text recognition | ✅ Done |
-| `transformers` + `timm` | MiDaS depth model | ✅ Done |
-| `elevenlabs` | Natural TTS | ✅ Done |
-| `pyttsx3` | Offline TTS fallback | ✅ Done |
-| `SpeechRecognition` | Mic voice commands | ✅ Done |
-| `flask` | Optional REST API | ✅ Done |
+| Library | Purpose |
+|---|---|
+| `ultralytics` | YOLOv8n detection |
+| `opencv-python` | Webcam + drawing |
+| `paddleocr` | Text recognition |
+| `transformers` + `timm` | MiDaS depth model |
+| `elevenlabs` | 🎙️ Natural TTS (primary) |
+| `pyttsx3` | Offline TTS fallback |
+| `SpeechRecognition` | Mic voice commands |
+| `python-dotenv` | `.env` key loading |
+| `flask` | Optional REST API |
+
+---
+
+*"wheredamilk — real-time navigation and label reading for blind users using object detection, depth estimation, and natural voice guidance."*

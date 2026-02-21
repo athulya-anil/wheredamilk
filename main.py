@@ -21,6 +21,13 @@ Frame pipeline:
 import sys
 import cv2
 
+# Load .env file (ELEVEN_API_KEY etc.) before any module imports that need them
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed — rely on shell env vars
+
 from vision.yolo import YOLODetector
 from vision.ocr import OCRReader
 from vision.depth import DepthEstimator

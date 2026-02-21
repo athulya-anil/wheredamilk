@@ -26,6 +26,7 @@ elevenlabs>=1.0.0           # primary TTS (set ELEVEN_API_KEY env var)
 pyttsx3>=2.90               # offline TTS fallback (no key needed)
 SpeechRecognition>=3.10.0   # optional mic input
 pyaudio>=0.2.13             # microphone backend for SpeechRecognition
+python-dotenv>=1.0.0        # auto-load .env file
 
 # ── API (optional) ────────────────────────────────────────────────────────────
 flask>=3.0.0
