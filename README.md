@@ -1,4 +1,4 @@
-# wheredamilk 🥛
+# wheredamilk 
 
 > Real-time assistive vision — **find items** and **read labels** by speaking, guided by AI-powered depth and direction audio.
 
@@ -47,7 +47,6 @@
 
 ### Platform
 - [ ] **iOS / Android front-end** — connect to `app.py` Flask API from a mobile app
-- [ ] **Raspberry Pi / edge deploy** — test on-device with Pi Camera Module
 
 ---
 
@@ -60,7 +59,7 @@ YOLOv8n (detect objects)            vision/yolo.py
       ↓
 Select top 1–2 boxes by confidence
       ↓
-MiDaS Depth Estimator               vision/depth.py    ← NEW
+MiDaS Depth Estimator               vision/depth.py  
       ↓
 PaddleOCR (read text on crop)       vision/ocr.py
       ↓
@@ -175,7 +174,3 @@ curl http://localhost:5000/status
 | `pyttsx3` | Offline TTS fallback | ✅ Done |
 | `SpeechRecognition` | Mic voice commands | ✅ Done |
 | `flask` | Optional REST API | ✅ Done |
-
----
-
-*"wheredamilk provides real-time navigation and label reading for blind users using object detection, depth estimation, and OCR."*
