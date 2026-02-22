@@ -1,22 +1,32 @@
 """
-vision/ocr.py — PaddleOCR wrapper with YOLO integration.
+vision/ocr.py — EasyOCR wrapper with YOLO integration.
 
-Reads text from cropped regions and enriches detection boxes with OCR text.
+EasyOCR provides high-quality text recognition comparable to Google ML Kit.
+Supports 80+ languages and handles rotated text well.
+
+See: https://github.com/JaidedAI/EasyOCR
 """
 
 import numpy as np
-from paddleocr import PaddleOCR
+import easyocr
 
 
 class OCRReader:
-    def __init__(self):
-        # use_angle_cls helps with rotated text; lang='en' for English
-        self._ocr = PaddleOCR(use_angle_cls=True, lang="en")
+    def __init__(self, languages=['en'], gpu=False):
+        """Initialize EasyOCR reader.
+        
+        Args:
+            languages: List of language codes (default: English only)
+            gpu: Set to True if you have CUDA; False for CPU
+        """
+        print(f"[ocr] Initializing EasyOCR with languages: {languages}, GPU={gpu}")
+        self._reader = easyocr.Reader(languages, gpu=gpu)
+        print(f"[ocr] ✅ EasyOCR ready")
 
     def read_text(self, frame, box: dict) -> str:
         """
         Crop `frame` to the region defined by `box` and run OCR.
-        Returns joined string of all detected text lines, or ''.
+        Returns joined string of all detected text, or ''.
         """
         x1 = max(0, box["x1"])
         y1 = max(0, box["y1"])
@@ -30,26 +40,25 @@ class OCRReader:
         if crop.size == 0:
             return ""
 
-        result = self._ocr.predict(crop)
+        results = self._reader.readtext(crop, detail=1)
         texts = []
-        if result and result[0]:
-            for line in result[0]:
-                if line and len(line) >= 2:
-                    try:
-                        ocr_data = line[1]
-                        if isinstance(ocr_data, (list, tuple)) and len(ocr_data) >= 2:
-                            text, conf = ocr_data[0], ocr_data[1]
-                            if conf > 0.5:
-                                texts.append(text)
-                    except (TypeError, IndexError, ValueError):
-                        pass
+        
+        if results:
+            for result in results:
+                try:
+                    # result = (bbox, text, confidence)
+                    bbox, text, conf = result
+                    if conf > 0.3:  # Filter low confidence
+                        texts.append(text)
+                except (TypeError, ValueError):
+                    pass
+        
         return " ".join(texts).strip()
 
     def read_text_with_confidence(self, frame, box: dict) -> tuple[str, float]:
         """
         Crop `frame` to the region defined by `box` and run OCR.
         Returns tuple of (text_string, average_confidence) or ('', 0.0).
-        Useful for filtering low-confidence OCR results.
         """
         x1 = max(0, box["x1"])
         y1 = max(0, box["y1"])
@@ -63,36 +72,27 @@ class OCRReader:
         if crop.size == 0:
             return "", 0.0
 
-        result = self._ocr.predict(crop)
+        results = self._reader.readtext(crop, detail=1)
         texts = []
         confidences = []
         
-        if result and result[0]:
-            for line in result[0]:
-                if line and len(line) >= 2:
-                    try:
-                        ocr_data = line[1]
-                        if isinstance(ocr_data, (list, tuple)) and len(ocr_data) >= 2:
-                            text, conf = ocr_data[0], ocr_data[1]
-                            if conf > 0.5:
-                                texts.append(text)
-                                confidences.append(conf)
-                    except (TypeError, IndexError, ValueError):
-                        pass
+        if results:
+            for result in results:
+                try:
+                    bbox, text, conf = result
+                    if conf > 0.3:
+                        texts.append(text)
+                        confidences.append(conf)
+                except (TypeError, ValueError):
+                    pass
         
         avg_conf = np.mean(confidences) if confidences else 0.0
         return " ".join(texts).strip(), float(avg_conf)
 
     def enrich_detections(self, frame, boxes: list[dict]) -> list[dict]:
         """
-        Process multiple YOLO detection boxes with OCR simultaneously.
+        Process multiple YOLO detection boxes with OCR.
         Returns enriched boxes with 'text' and 'text_conf' fields.
-        
-        Example:
-            boxes = detector.detect(frame)
-            enriched = ocr.enrich_detections(frame, boxes)
-            for box in enriched:
-                print(box['cls_name'], "→", box['text'])
         """
         enriched = []
         for box in boxes:
@@ -102,3 +102,4 @@ class OCRReader:
             box_copy["text_conf"] = conf
             enriched.append(box_copy)
         return enriched
+

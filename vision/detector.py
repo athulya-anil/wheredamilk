@@ -1,7 +1,6 @@
 """
 vision/detector.py — Unified YOLO + OCR detection pipeline.
 
-Simplifies using YOLO detection and PaddleOCR together in a single step.
 """
 
 from vision.yolo import YOLODetector

@@ -202,17 +202,37 @@ def main():
                 draw_box(frame, b, COL_TARGET, "waiting…")
             
             if what_wait_frames >= 40:  
+                # Run OCR on ALL detected boxes
+                enriched_boxes = ocr.enrich_detections(frame, boxes)
+                
+                # Print all detected text to terminal
+                print(f"\n[main] ════════ WHAT MODE: ALL DETECTIONS ════════")
+                all_text_items = []
+                for enriched_box in enriched_boxes:
+                    cls_name = enriched_box["cls_name"]
+                    text = enriched_box["text"]
+                    confidence = enriched_box["text_conf"]
+                    
+                    if text:
+                        print(f"  [{cls_name}] Text: '{text}' (OCR conf: {confidence:.2f})")
+                        all_text_items.append(f"{cls_name}: {text}")
+                    else:
+                        print(f"  [{cls_name}] No text detected")
+                
+                # Speak the main object (largest non-person box)
                 if b is not None:
-                    # Perform OCR and identify the object
-                    text = ocr.read_text(frame, b)
+                    text = b.get("text", ocr.read_text(frame, b))
                     obj_class = b["cls_name"]
                     result = f"{obj_class}"
                     if text:
                         result += f": {text}"
-                    print(f"[main] What: {result}")
+                    print(f"[main] Speaking: {result}")
                     tts.speak_once(result)
                 else:
                     tts.speak_once("Nothing detected.")
+                
+                print(f"[main] ════════════════════════════════════════════\n")
+                
                 mode = "idle"
                 what_wait_frames = 0
                 tts.reset_throttle()  # Reset throttle for next mode
@@ -245,14 +265,34 @@ def main():
 
         elif mode == "read":
             b = largest_box_excluding(boxes)  # Exclude "person" class
+            
+            # Run OCR on ALL detected boxes
+            enriched_boxes = ocr.enrich_detections(frame, boxes)
+            
+            # Print all detected text to terminal
+            print(f"\n[main] ════════ READ MODE: ALL DETECTIONS ════════")
+            all_text = []
+            for enriched_box in enriched_boxes:
+                cls_name = enriched_box["cls_name"]
+                text = enriched_box["text"]
+                confidence = enriched_box["text_conf"]
+                
+                if text:
+                    print(f"  [{cls_name}] '{text}' (OCR conf: {confidence:.2f})")
+                    all_text.append(text)
+            
+            # Speak text from the largest non-person box
             if b is not None:
                 draw_box(frame, b, COL_TARGET, "reading…")
-                text = ocr.read_text(frame, b)
+                text = b.get("text", ocr.read_text(frame, b))
                 read_result = text if text else "No text found."
-                print(f"[main] Read: {read_result}")
+                print(f"[main] Speaking (primary object): {read_result}")
                 tts.speak_once(read_result)
             else:
                 tts.speak_once("Nothing detected.")
+            
+            print(f"[main] ════════════════════════════════════════════\n")
+            
             tts.reset_throttle()
             mode = "idle"
 

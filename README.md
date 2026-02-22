@@ -8,12 +8,12 @@
 
 ### Core Pipeline
 - [x] **YOLOv8n object detection** — real-time, 640×480, every 2nd frame (`vision/yolo.py`)
-- [x] **PaddleOCR text reading** — crops top-1/2 boxes by confidence, reads label text (`vision/ocr.py`)
+- [x] **EasyOCR text reading** — high-quality OCR comparable to Google ML Kit, crops top-1/2 boxes by confidence, reads label text (`vision/ocr.py`)
 - [x] **MiDaS monocular depth** — real depth from a single RGB webcam, no depth camera needed (`vision/depth.py`)
 - [x] **Keyword matching** — case-insensitive substring, e.g. "milk" in "DairyPure Whole Milk" (`logic/match.py`)
 - [x] **Spatial direction** — left/right/ahead from bbox centre + MiDaS depth (bbox-area fallback) (`logic/direction.py`)
 - [x] **IoU tracker** — locks onto target, tracks across frames, handles short occlusions (`logic/tracker.py`)
-- [x] **ElevenLabs TTS** 🎙️ — natural, human-quality voice via `eleven_turbo_v2` model (`utils/tts.py`)
+- [x] **ElevenLabs TTS** 🎙️ — natural, human-quality voice via `eleven_turbo_v2` model, with **edge-tts fallback** (Microsoft Edge voices, no API key needed) (`utils/tts.py`)
 - [x] **Throttled speech** — speaks only on direction change or every ~1s (no spam)
 - [x] **Continuous mic listener** — background thread, always listening (`utils/speech.py`)
 - [x] **Voice commands** — "find milk", "read", "stop", "quit"
@@ -48,7 +48,7 @@ YOLOv8n — detect objects            vision/yolo.py
         ↓
 MiDaS — estimate depth              vision/depth.py
         ↓
-PaddleOCR — read text on crop       vision/ocr.py
+EasyOCR — read text on crop         vision/ocr.py
         ↓
 Keyword match                       logic/match.py
         ↓
@@ -73,7 +73,7 @@ wheredamilk/
 │
 ├── vision/
 │   ├── yolo.py          ← YOLOv8n detector
-│   ├── ocr.py           ← PaddleOCR wrapper
+│   ├── ocr.py           ← EasyOCR wrapper
 │   └── depth.py         ← MiDaS monocular depth
 │
 ├── logic/
@@ -91,19 +91,33 @@ wheredamilk/
 ## Installation
 
 ```bash
-cd /Users/athulyaanil/wheredamilk
+cd /Users/balachandrads/Desktop/Projects/wheredamilk
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# macOS mic support
+# macOS mic support (optional)
 brew install portaudio && pip install pyaudio
 
-# MiDaS weights (~400 MB) download automatically on first run
+# EasyOCR weights (~70 MB) and MiDaS weights (~400 MB) download automatically on first run
 ```
+
+> **Note:** EasyOCR may take 30-60 seconds to initialize on first run as it downloads the model.
 
 ---
 
-## ElevenLabs Setup 🎙️
+## Text Recognition (EasyOCR) ✨
+
+**EasyOCR** provides high-quality text recognition comparable to Google ML Kit. No setup needed — works automatically.
+
+> EasyOCR downloads its model (~70 MB) automatically on first run. This may take 30-60 seconds.
+
+---
+
+## Text-to-Speech (TTS) 🎙️
+
+### Primary: ElevenLabs (Optional)
+
+For premium natural voices via **ElevenLabs**:
 
 1. Sign up at **[elevenlabs.io](https://elevenlabs.io)** (free — 10,000 chars/month)
 2. Go to **Settings → API Keys** → create and copy your key
@@ -111,11 +125,18 @@ brew install portaudio && pip install pyaudio
 
 ```bash
 ELEVEN_API_KEY=sk_your_key_here
-ELEVEN_VOICE_ID=Rachel        # optional — Rachel is default
+ELEVEN_VOICE_ID=AeRdCCKzvd23BpJoofzx  # optional — Rachel is default
 ```
 
 > The `.env` file is gitignored and **never pushed to GitHub**.
-> If no key is set, TTS will be disabled.
+
+### Fallback: edge-tts (Built-in) ✨ 
+
+If **no ElevenLabs key is set**, the app automatically falls back to **edge-tts** — Microsoft Edge's high-quality voices. **No API key needed!** Just works.
+
+- **Fallback chain:** ElevenLabs → edge-tts → afplay (system speaker)
+- **Best for:** Users without API keys, offline environments (sort of)
+- **Quality:** Comparable to Google ML Kit voices
 
 ---
 
@@ -155,9 +176,11 @@ curl http://localhost:5000/status
 |---|---|
 | `ultralytics` | YOLOv8n detection |
 | `opencv-python` | Webcam + drawing |
-| `paddleocr` | Text recognition |
+| `easyocr` | Text recognition (ML Kit-quality) |
+| `torch` | PyTorch (required by EasyOCR) |
 | `transformers` + `timm` | MiDaS depth model |
-| `elevenlabs` | 🎙️ Natural TTS |
+| `elevenlabs` | 🎙️ Premium TTS |
+| `edge-tts` | 🎙️ Fallback TTS (no API key) |
 | `SpeechRecognition` | Mic voice commands |
 | `python-dotenv` | `.env` key loading |
 | `flask` | Optional REST API |
