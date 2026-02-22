@@ -74,6 +74,58 @@ def largest_box_excluding(boxes: list[dict], exclude_classes: list[str] = None) 
     return max(boxes, key=lambda b: (b["x2"] - b["x1"]) * (b["y2"] - b["y1"]))
 
 
+def get_box_position(box: dict, frame_w: int, frame_h: int, mirror_horizontal: bool = True) -> str:
+    """Determine if bounding box is on left/center/right and top/middle/bottom of screen.
+    
+    Args:
+        box: Bounding box dict with x1, x2, y1, y2
+        frame_w: Frame width
+        frame_h: Frame height
+        mirror_horizontal: If True, flip left/right (for mirrored webcam). Default True.
+    
+    Returns a phrase like "top-left", "center", "bottom-right" describing the screen position.
+    Useful for "what mode" to tell user where the object is visible on-screen.
+    """
+    # Calculate box centre
+    cx = (box["x1"] + box["x2"]) / 2
+    cy = (box["y1"] + box["y2"]) / 2
+    
+    # Horizontal position (1/3 divisions)
+    if cx < frame_w / 3:
+        horizontal = "left"
+    elif cx < 2 * frame_w / 3:
+        horizontal = "center"
+    else:
+        horizontal = "right"
+    
+    # Mirror horizontal if webcam is mirrored
+    if mirror_horizontal:
+        if horizontal == "left":
+            horizontal = "right"
+        elif horizontal == "right":
+            horizontal = "left"
+        # "center" stays "center"
+    
+    # Vertical position (1/3 divisions)
+    if cy < frame_h / 3:
+        vertical = "top"
+    elif cy < 2 * frame_h / 3:
+        vertical = "middle"
+    else:
+        vertical = "bottom"
+    
+    # Combine: if both are centre, just say "center", otherwise say both
+    if horizontal == "center" and vertical == "middle":
+        return "center"
+    elif vertical == "middle":
+        return horizontal
+    elif horizontal == "center":
+        return vertical
+    else:
+        return f"{vertical}-{horizontal}"
+
+
+
 def draw_box(frame, box: dict, colour, label: str = ""):
     cv2.rectangle(frame, (box["x1"], box["y1"]), (box["x2"], box["y2"]), colour, 2)
     if label:
@@ -223,9 +275,13 @@ def main():
                 if b is not None:
                     text = b.get("text", ocr.read_text(frame, b))
                     obj_class = b["cls_name"]
-                    result = f"{obj_class}"
+                    position = get_box_position(b, FRAME_W, FRAME_H)
+                    
+                    # Build announcement: "cup on your left" or "bottle center: WATER"
+                    result = f"{obj_class} (on your {position})"
                     if text:
                         result += f": {text}"
+                    
                     print(f"[main] Speaking: {result}")
                     tts.speak_once(result)
                 else:
@@ -285,7 +341,13 @@ def main():
             if b is not None:
                 draw_box(frame, b, COL_TARGET, "reading…")
                 text = b.get("text", ocr.read_text(frame, b))
+                obj_class = b["cls_name"]
+                position = get_box_position(b, FRAME_W, FRAME_H)
+                
+                # Build announcement with position
                 read_result = text if text else "No text found."
+                read_result = f"{obj_class} (on your {position}): {read_result}"
+                
                 print(f"[main] Speaking (primary object): {read_result}")
                 tts.speak_once(read_result)
             else:

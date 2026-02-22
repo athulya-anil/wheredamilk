@@ -42,7 +42,6 @@ class DepthEstimator:
             return
 
         try:
-            print("[depth] Loading MiDaS depth model (first run downloads ~400 MB)…")
             self._pipe = hf_pipeline(
                 task="depth-estimation",
                 model=MODEL_ID,

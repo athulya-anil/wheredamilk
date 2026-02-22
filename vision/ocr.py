@@ -19,9 +19,8 @@ class OCRReader:
             languages: List of language codes (default: English only)
             gpu: Set to True if you have CUDA; False for CPU
         """
-        print(f"[ocr] Initializing EasyOCR with languages: {languages}, GPU={gpu}")
         self._reader = easyocr.Reader(languages, gpu=gpu)
-        print(f"[ocr] ✅ EasyOCR ready")
+        print(f"[ocr] EasyOCR ready")
 
     def read_text(self, frame, box: dict) -> str:
         """
