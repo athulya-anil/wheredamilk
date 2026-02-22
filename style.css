@@ -98,7 +98,7 @@ body {
 }
 
 .nav-logo-img {
-    height: 80px;
+    height: 96px;
     width: auto;
 }
 
@@ -145,7 +145,7 @@ body {
 }
 
 .hero-logo {
-    width: 200px;
+    width: 320px;
     height: auto;
     margin-bottom: 24px;
     animation: floatIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -490,15 +490,56 @@ body {
 }
 
 /* ============================================================================
+   Tech Stack
+   ============================================================================ */
+
+.stack-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.stack-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+}
+
+.stack-item:hover {
+    border-color: var(--blue);
+    box-shadow: 0 4px 14px rgba(74, 144, 217, 0.1);
+    transform: translateY(-2px);
+}
+
+.stack-item strong {
+    font-size: 0.9rem;
+    color: var(--blue);
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 140px;
+}
+
+.stack-item span {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* ============================================================================
    Footer
    ============================================================================ */
 
 .footer {
     text-align: center;
     padding: 40px 24px;
-    color: var(--white);
+    color: var(--text);
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     background: #C1D9EA;
     border-top: none;
 }
@@ -546,6 +587,10 @@ body {
     .nav-btn {
         padding: 10px 20px;
         font-size: 0.8rem;
+    }
+
+    .stack-grid {
+        grid-template-columns: 1fr;
     }
 
     .hero-buttons {

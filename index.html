@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhereDaMilk</title>
-    <link rel="icon" type="image/png" href="assets/3.png">
+    <link rel="icon" type="image/png" href="assets/logo.png">
     <link rel="stylesheet" href="style.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,12 +16,12 @@
         <div class="nav-inner">
             <div class="nav-left">
                 <a href="index.html" class="nav-logo">
-                    <img src="assets/3.png" alt="WhereDaMilk" class="nav-logo-img">
+                    <img src="assets/logo.png" alt="WhereDaMilk" class="nav-logo-img">
                 </a>
                 <div class="nav-links">
                     <a href="#features">Features</a>
                     <a href="#faq">FAQ</a>
-                </div>
+</div>
             </div>
             <div class="nav-right">
                 <a href="download.html" class="nav-btn">Download</a>
@@ -32,10 +32,10 @@
     <!-- Hero -->
     <section class="hero" id="hero">
         <div class="hero-inner">
-            <img src="assets/2.png" alt="WhereDaMilk" class="hero-logo">
+            <img src="assets/main.png" alt="WhereDaMilk" class="hero-logo">
             <h1>WhereDaMilk?</h1>
-            <p class="hero-tagline">AI-Powered Vision Assistant<br>Voice-Controlled Object Finder</p>
-            <p class="hero-desc">Point your webcam at anything. Speak to find items, read labels, and identify objects — completely hands-free.</p>
+            <p class="hero-tagline">Real-Time Assistive Vision<br>Voice-Controlled Object Finder</p>
+            <p class="hero-desc">Point your camera at anything. Find items, read labels, and get details by speaking. Powered by object detection, depth estimation, and natural voice guidance.</p>
             <div class="hero-buttons">
                 <button class="btn-start" id="initBtn">Start App</button>
                 <button class="btn-stop" id="stopBtn">Stop App</button>
@@ -52,22 +52,22 @@
                 <div class="feature-card">
                     <div class="feature-icon">🎯</div>
                     <h3>Object Detection</h3>
-                    <p>YOLOv8-powered real-time detection identifies objects in your webcam feed instantly.</p>
+                    <p>YOLOv8-powered real-time detection identifies objects in your camera feed instantly. Say "find milk" and it locks on and tracks it.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📖</div>
                     <h3>Text Recognition</h3>
-                    <p>EasyOCR reads text from labels, packaging, and signs — then speaks it aloud.</p>
+                    <p>EasyOCR reads text from labels, packaging, and signs, then speaks it aloud. Say "read" to extract visible text instantly.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📏</div>
                     <h3>Depth Estimation</h3>
-                    <p>MiDaS depth model estimates distance to guide you closer to your target.</p>
+                    <p>MiDaS depth model estimates how far objects are, giving spoken guidance to help you navigate closer to your target.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🗣️</div>
                     <h3>Voice Control</h3>
-                    <p>Fully hands-free — speak commands to find items, read text, or identify objects.</p>
+                    <p>Fully hands-free. Speak commands to find items, read text, identify objects, or get detailed product info via Google Gemini.</p>
                 </div>
             </div>
         </div>
@@ -79,24 +79,44 @@
             <h2>Voice Commands</h2>
             <div class="commands-list">
                 <div class="command-row">
-                    <code>"find &lt;item&gt;"</code>
-                    <span>Find and locate a specific item with spoken directions</span>
+                    <code>"find milk"</code>
+                    <span><strong>FIND</strong> - Scans for "milk" (YOLO class OR text), locks on, tracks silently</span>
+                </div>
+                <div class="command-row">
+                    <code>"find orange juice"</code>
+                    <span><strong>FIND</strong> - Works for any item name with spaces</span>
                 </div>
                 <div class="command-row">
                     <code>"what is this"</code>
-                    <span>Identify the object currently in view</span>
+                    <span><strong>WHAT</strong> - Waits 2-3s, identifies object, announces position once</span>
+                </div>
+                <div class="command-row">
+                    <code>"what does this say"</code>
+                    <span><strong>WHAT</strong> - Same as above</span>
                 </div>
                 <div class="command-row">
                     <code>"read"</code>
-                    <span>Read text from labels and packaging aloud</span>
+                    <span><strong>READ</strong> - Immediately OCRs largest object, reads text once</span>
                 </div>
                 <div class="command-row">
-                    <code>"stop"</code>
-                    <span>Cancel the current mode and return to idle</span>
+                    <code>"read this"</code>
+                    <span><strong>READ</strong> - Same as above</span>
                 </div>
                 <div class="command-row">
-                    <code>"quit"</code>
-                    <span>Exit the application</span>
+                    <code>"tell me more"</code>
+                    <span><strong>DETAILS</strong> - Sends to Gemini, gets detailed product info</span>
+                </div>
+                <div class="command-row">
+                    <code>"tell me more about this product"</code>
+                    <span><strong>DETAILS</strong> - Same as above</span>
+                </div>
+                <div class="command-row">
+                    <code>"stop" / "cancel"</code>
+                    <span>Returns to idle, stops current mode</span>
+                </div>
+                <div class="command-row">
+                    <code>"quit" / "exit"</code>
+                    <span>Closes app</span>
                 </div>
             </div>
         </div>
@@ -109,7 +129,11 @@
             <div class="faq-list">
                 <details class="faq-item">
                     <summary>What does WhereDaMilk do?</summary>
-                    <p>WhereDaMilk is a voice-controlled AI vision assistant. It uses your webcam to detect objects, read text on labels, and give you spoken directions to find items — completely hands-free.</p>
+                    <p>WhereDaMilk is a real-time assistive vision tool. It uses your camera to detect objects, read labels, estimate depth, and give spoken directions to help you find items, all through voice commands.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>What are the different modes?</summary>
+                    <p>There are four modes: Find (locate items by name), What (identify objects in view), Read (extract and speak text from labels), and Details (get in-depth product info powered by Google Gemini).</p>
                 </details>
                 <details class="faq-item">
                     <summary>Do I need a GPU?</summary>
@@ -121,15 +145,19 @@
                 </details>
                 <details class="faq-item">
                     <summary>How does voice control work?</summary>
-                    <p>WhereDaMilk listens through your microphone using Google Speech Recognition. Just say commands like "find milk" or "read" and it responds in real-time.</p>
+                    <p>WhereDaMilk listens through your microphone using Google Speech Recognition. Say commands like "find milk", "read", or "tell me more" and it responds in real-time.</p>
                 </details>
                 <details class="faq-item">
                     <summary>What text-to-speech engine is used?</summary>
-                    <p>It uses ElevenLabs for high-quality TTS with an API key. If unavailable, it falls back to Microsoft Edge TTS which is free and requires no setup.</p>
+                    <p>It uses ElevenLabs for high-quality TTS when an API key is provided. Otherwise, it falls back to Microsoft Edge TTS which is free and requires no setup.</p>
                 </details>
                 <details class="faq-item">
                     <summary>Can it detect any object?</summary>
-                    <p>It uses YOLOv8 which can detect 80+ common object classes (bottles, cups, phones, people, etc). For text-based items like specific brands, it uses OCR to read the label text.</p>
+                    <p>YOLOv8 detects 80+ common object classes (bottles, cups, phones, etc). For branded or labeled items, it falls back to OCR text matching to find them by name.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>What is the Details mode?</summary>
+                    <p>Details mode sends the current camera frame to Google Gemini Vision AI for a full product analysis including brand, ingredients, nutritional info, and more. Requires a free Gemini API key.</p>
                 </details>
             </div>
         </div>
@@ -137,7 +165,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Made by Allen, Bala, Athulya</p>
+        <p>Made by Allen, Bala, &amp; Athulya | WhereDaMilk &copy; 2026</p>
     </footer>
 
     <script src="script.js"></script>
