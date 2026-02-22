@@ -41,6 +41,13 @@ except ImportError:
     except ImportError:
         _SOUNDDEVICE_AVAILABLE = False
 
+# Try to import pyttsx3 as fallback TTS engine
+try:
+    import pyttsx3
+    _PYTTSX3_AVAILABLE = True
+except ImportError:
+    _PYTTSX3_AVAILABLE = False
+
 # ElevenLabs settings — tweak to taste
 ELEVEN_VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "AeRdCCKzvd23BpJoofzx")
 ELEVEN_MODEL    = "eleven_turbo_v2"   # lowest-latency model (~300 ms)
@@ -50,13 +57,25 @@ class TTSEngine:
         self._last_text: str  = ""
         self._last_time: float = 0.0
         self._lock = threading.Lock()
+        self._pyttsx3_engine = None
 
         if _ELEVEN_AVAILABLE:
             self._client = ElevenLabs(api_key=_ELEVEN_KEY)
-            self.speak_once("ElevenLabs TTS engine initialized and ready.")
             print(f"[tts] ElevenLabs ready  (voice={ELEVEN_VOICE_ID}, model={ELEVEN_MODEL})")
         else:
-            print("[tts] WARNING: ElevenLabs not available (key missing or package not installed). No audio.")
+            print("[tts] WARNING: ElevenLabs not available (key missing or package not installed).")
+        
+        # Initialize pyttsx3 as fallback
+        if _PYTTSX3_AVAILABLE:
+            try:
+                self._pyttsx3_engine = pyttsx3.init()
+                self._pyttsx3_engine.setProperty('rate', 100)  # speech rate
+                print("[tts] pyttsx3 available as fallback TTS engine")
+                self._say_pyttsx3("wheredamilk is ready.")
+            except Exception as e:
+                print(f"[tts] Failed to initialize pyttsx3: {e}")
+        else:
+            print("[tts] WARNING: pyttsx3 not available. Install with: pip install pyttsx3")
 
     # ── Public API ────────────────────────────────────────────────────────────
 
@@ -84,6 +103,8 @@ class TTSEngine:
     def _say(self, text: str) -> None:
         if _ELEVEN_AVAILABLE:
             self._say_eleven(text)
+        elif _PYTTSX3_AVAILABLE and self._pyttsx3_engine:
+            self._say_pyttsx3(text)
         else:
             print(f"[tts] (no audio) {text}")
 
@@ -98,7 +119,20 @@ class TTSEngine:
             
             self._play_audio(audio_bytes)
         except Exception as exc:
-            print(f"[tts] ElevenLabs error: {exc}")
+            print(f"[tts] ElevenLabs error ({type(exc).__name__}): {exc}")
+            print(f"[tts] Falling back to pyttsx3...")
+            self._say_pyttsx3(text)
+    
+    def _say_pyttsx3(self, text: str) -> None:
+        """Fallback TTS using pyttsx3 (local, no API calls)."""
+        if not self._pyttsx3_engine:
+            print(f"[tts] pyttsx3 engine not available")
+            return
+        try:
+            self._pyttsx3_engine.say(text)
+            self._pyttsx3_engine.runAndWait()
+        except Exception as e:
+            print(f"[tts] pyttsx3 error: {e}")
     
     def _play_audio(self, audio_data) -> None:
         """Play audio bytes using available backend. Handles both bytes and generators."""
