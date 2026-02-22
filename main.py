@@ -59,6 +59,21 @@ def largest_box(boxes: list[dict]) -> dict | None:
     return max(boxes, key=lambda b: (b["x2"] - b["x1"]) * (b["y2"] - b["y1"]))
 
 
+def largest_box_excluding(boxes: list[dict], exclude_classes: list[str] = None) -> dict | None:
+    """Pick largest box, excluding certain classes (e.g., person).
+    Falls back to largest box if all boxes are in exclude list."""
+    if not boxes:
+        return None
+    if exclude_classes is None:
+        exclude_classes = ["person"]
+    
+    filtered = [b for b in boxes if b["cls_name"] not in exclude_classes]
+    if filtered:
+        return max(filtered, key=lambda b: (b["x2"] - b["x1"]) * (b["y2"] - b["y1"]))
+    # Fall back to largest box if all excluded
+    return max(boxes, key=lambda b: (b["x2"] - b["x1"]) * (b["y2"] - b["y1"]))
+
+
 def draw_box(frame, box: dict, colour, label: str = ""):
     cv2.rectangle(frame, (box["x1"], box["y1"]), (box["x2"], box["y2"]), colour, 2)
     if label:
@@ -180,13 +195,13 @@ def main():
             draw_box(frame, b, COL_DEFAULT, b["cls_name"])
 
         if mode == "what":
-            # Wait 2-3 seconds (approximately 75 raw frames at ~30fps)
+            # Wait 1-2 seconds (approximately 40 raw frames at ~30fps)
             what_wait_frames += 1
-            b = largest_box(boxes)
+            b = largest_box_excluding(boxes)  # Exclude "person" class
             if b is not None:
                 draw_box(frame, b, COL_TARGET, "waiting…")
             
-            if what_wait_frames >= 75:  # ~2.5 seconds
+            if what_wait_frames >= 40:  
                 if b is not None:
                     # Perform OCR and identify the object
                     text = ocr.read_text(frame, b)
@@ -229,7 +244,7 @@ def main():
                 draw_box(frame, target_box, COL_LOCKED, f"TARGET: {query}")
 
         elif mode == "read":
-            b = largest_box(boxes)
+            b = largest_box_excluding(boxes)  # Exclude "person" class
             if b is not None:
                 draw_box(frame, b, COL_TARGET, "reading…")
                 text = ocr.read_text(frame, b)
