@@ -1,5 +1,5 @@
 # WhereDaMilk
-<img src="/assets/icon.jpg" width="400" alt="WhereDaMilk">
+<img src="/assets/wheredamilk.gif" width="400" alt="WhereDaMilk">
 
 ### AI-Powered Vision Assistant
 
