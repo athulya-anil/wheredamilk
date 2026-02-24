@@ -1,23 +1,25 @@
 # WhereDaMilk
-### AI-Powered Vision Assistant
-
 <img src="/assets/icon.jpg" width="400" alt="WhereDaMilk">
 
-Built to help visually impaired users navigate and understand their surroundings in real-world environments.
+### AI-Powered Vision Assistant
 
-[▶ Watch Demo](http://www.youtube.com/watch?v=gTKes_XwjXY)
+WhereDaMilk turns a webcam into real-time assistive vision for shopping. 
+
+Built for visually impaired users, it enables independent navigation in stores by detecting products, reading labels, and guiding users through voice commands.
+
+**Demo Link:** http://www.youtube.com/watch?v=gTKes_XwjXY
 
 ---
 
 ## What It Does
 
-wheredamilk helps you locate and learn about objects in real time using your webcam and microphone. Speak a command, and the app scans the scene, identifies the target, tracks it, and narrates its position.
+WhereDaMilk helps you locate and learn about objects in real time using your webcam and microphone. Speak a command, and the app scans the scene, identifies the target, tracks it, and narrates its position.
 
 The app has **4 modes**, each triggered by voice:
 
 | Mode | Command | What happens |
 |---|---|---|
-| **FIND** | `"find milk"` | Scans for the object, locks on, and tracks it silently. Announces location: *"Found milk on your left — keep going."* |
+| **FIND** | `"find milk"` | Scans for the object, locks on, and tracks it silently. Announces location: *"Found milk on your left."* |
 | **WHAT** | `"what is this"` | Identifies the object in frame, announces its class and position. |
 | **READ** | `"read"` | OCRs the largest visible object and reads any text aloud. |
 | **DETAILS** | `"tell me more"` | Sends the current frame to Gemini Vision for a full product analysis (brand, ingredients, info). |
@@ -26,7 +28,7 @@ The app has **4 modes**, each triggered by voice:
 1. YOLO class matching (fast, for common objects)
 2. OCR text fallback (for labeled products like "COCA-COLA", "JUICE")
 
-Navigation guidance combines **MiDaS monocular depth estimation** with horizontal position to give spoken cues like *"on your left — almost there"* or *"stop, it's right in front of you"*.
+Navigation guidance uses real-time object position in the frame to provide directional cues like *"Found apple on your right."*
 
 ---
 
@@ -58,11 +60,6 @@ Mode Handler (logic/modes.py)
 IoU Tracker (logic/tracker.py) ◄────────────────────────────────────────┘
     │
     ▼
-Direction Engine (logic/direction.py)
-    ├── MiDaS Depth Estimator (vision/detector.py)
-    └── Horizontal position → spoken cue ("on your left — almost there")
-    │
-    ▼
 TTS (utils/tts.py)
     ├── ElevenLabs (primary)
     └── edge-tts (fallback)
@@ -81,7 +78,7 @@ python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-> EasyOCR (~70 MB) and MiDaS (~400 MB) model weights download automatically on first run.
+> EasyOCR (~70 MB) model weights download automatically on first run.
 
 ```bash
 # macOS mic support (if SpeechRecognition fails)
@@ -140,12 +137,12 @@ wheredamilk/
 ├── vision/
 │   ├── yolo.py           ← YOLOv8n detector
 │   ├── ocr.py            ← EasyOCR wrapper
-│   ├── detector.py       ← Detection pipeline
+│   ├── detector.py       ← Unified YOLO + OCR detection pipeline
 │   └── gemini.py         ← Google Gemini Vision API
 │
 ├── logic/
 │   ├── modes.py          ← Mode handlers (FIND, WHAT, READ, DETAILS)
-│   ├── direction.py      ← Spatial direction + MiDaS depth guidance
+│   ├── direction.py      ← Spatial direction utilities
 │   ├── match.py          ← Keyword matching
 │   └── tracker.py        ← IoU single-target tracker
 │
@@ -163,7 +160,7 @@ wheredamilk/
 | `ultralytics` | YOLOv8n object detection |
 | `opencv-python` | Webcam capture + drawing |
 | `easyocr` | Text recognition |
-| `torch` + `transformers` + `timm` | MiDaS monocular depth estimation |
+| `torch` + `timm` | PyTorch (installed as dependency; MiDaS depth is a planned future feature) |
 | `elevenlabs` | Premium TTS (optional) |
 | `edge-tts` | Fallback TTS (no API key needed) |
 | `SpeechRecognition` | Voice command input |
@@ -175,8 +172,15 @@ wheredamilk/
 
 Built by [Athulya Anil](https://github.com/athulya-anil), [Balachandra DS](https://github.com/Baluds), and [Allen Joe Winny](https://github.com/allenjoewinny)
 
-Created for [Hack(H)er413 2026](https://www.hackher413.com/)
-
 🏆 **Best DEI Hack** at [Hack(H)er413 2026](https://www.hackher413.com/) — Diversity, Equity, and Inclusion Award
 
 [Devpost Submission](https://devpost.com/software/wheredamilk)
+
+---
+
+## Future Improvements
+
+- MiDaS monocular depth estimation for distance-aware guidance
+- Mobile app for iOS and Android
+- Custom models for retail-specific products beyond YOLO's 80 classes
+- Multilingual voice command and TTS support
