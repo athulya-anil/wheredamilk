@@ -177,4 +177,6 @@ Built by [Athulya Anil](https://github.com/athulya-anil), [Balachandra DS](https
 
 Created for [Hack(H)er413 2026](https://www.hackher413.com/)
 
+🏆 **Best DEI Hack** at [Hack(H)er413 2026](https://www.hackher413.com/) — Diversity, Equity, and Inclusion Award
+
 [Devpost Submission](https://devpost.com/software/wheredamilk)
